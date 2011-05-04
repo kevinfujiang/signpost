@@ -61,6 +61,8 @@ public class OAuth {
 
     public static final String OAUTH_VERIFIER = "oauth_verifier";
 
+    public static final String OAUTH_SESSION_HANDLE = "oauth_session_handle";
+
     /**
      * Pass this value as the callback "url" upon retrieving a request token if
      * your application cannot receive callbacks (e.g. because it's a desktop

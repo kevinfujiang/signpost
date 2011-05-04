@@ -77,6 +77,48 @@ public abstract class AbstractOAuthConsumer implements OAuthConsumer {
         this.additionalParameters = additionalParameters;
     }
 
+
+    public HttpRequest signRefresh(HttpRequest request) throws OAuthMessageSignerException,
+        OAuthExpectationFailedException, OAuthCommunicationException {
+        if (consumerKey == null) {
+            throw new OAuthExpectationFailedException("consumer key not set");
+        }
+        if (consumerSecret == null) {
+            throw new OAuthExpectationFailedException("consumer secret not set");
+        }
+
+        requestParameters = new HttpParameters();
+        try {
+            if (additionalParameters != null) {
+                requestParameters.putAll(additionalParameters, false);
+            }
+            collectHeaderParameters(request, requestParameters);
+            collectQueryParameters(request, requestParameters);
+            collectBodyParameters(request, requestParameters);
+
+            String oauth_session_handle = request.getHeader(OAuth.OAUTH_SESSION_HANDLE);
+            // add any OAuth params that haven't already been set
+            completeOAuthParameters(requestParameters);
+            requestParameters.put(OAuth.OAUTH_SESSION_HANDLE, oauth_session_handle,  true);
+
+
+            requestParameters.remove(OAuth.OAUTH_SIGNATURE);
+            requestParameters.remove(OAuth.OAUTH_CALLBACK);
+
+        } catch (IOException e) {
+            throw new OAuthCommunicationException(e);
+        }
+
+        String signature = messageSigner.sign(request, requestParameters);
+        OAuth.debugOut("signature", signature);
+
+        signingStrategy.writeSignature(signature, request, requestParameters);
+        OAuth.debugOut("Auth header", request.getHeader("Authorization"));
+        OAuth.debugOut("Request URL", request.getRequestUrl());
+
+        return request;
+    }
+
     public HttpRequest sign(HttpRequest request) throws OAuthMessageSignerException,
             OAuthExpectationFailedException, OAuthCommunicationException {
         if (consumerKey == null) {
@@ -114,10 +156,16 @@ public abstract class AbstractOAuthConsumer implements OAuthConsumer {
         return request;
     }
 
+    public HttpRequest signRefresh(Object request) throws OAuthMessageSignerException,
+            OAuthExpectationFailedException, OAuthCommunicationException {
+        return signRefresh(wrap(request));
+    }
+
     public HttpRequest sign(Object request) throws OAuthMessageSignerException,
             OAuthExpectationFailedException, OAuthCommunicationException {
         return sign(wrap(request));
     }
+
 
     public String sign(String url) throws OAuthMessageSignerException,
             OAuthExpectationFailedException, OAuthCommunicationException {

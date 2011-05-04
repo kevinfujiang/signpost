@@ -120,6 +120,9 @@ public interface OAuthConsumer extends Serializable {
     public HttpRequest sign(HttpRequest request) throws OAuthMessageSignerException,
             OAuthExpectationFailedException, OAuthCommunicationException;
 
+    public HttpRequest signRefresh(HttpRequest request) throws OAuthMessageSignerException,
+            OAuthExpectationFailedException, OAuthCommunicationException;
+
     /**
      * <p>
      * Signs the given HTTP request by writing an OAuth signature (and other
@@ -138,6 +141,9 @@ public interface OAuthConsumer extends Serializable {
      * @throws OAuthCommunicationException
      */
     public HttpRequest sign(Object request) throws OAuthMessageSignerException,
+            OAuthExpectationFailedException, OAuthCommunicationException;
+
+    public HttpRequest signRefresh(Object request) throws OAuthMessageSignerException,
             OAuthExpectationFailedException, OAuthCommunicationException;
 
     /**
